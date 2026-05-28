@@ -1,0 +1,1 @@
+import { create } from "zustand";\n\ninterface AuthState { user: null; setUser: (user: null) => void; }\n\nexport const useAuthStore = create<AuthState>((set) => ({\n  user: null,\n  setUser: (user) => set({ user }),\n}));\n

@@ -1,0 +1,1 @@
+import { create } from "zustand";\n\ninterface UIState { loading: boolean; setLoading: (value: boolean) => void; }\n\nexport const useUIStore = create<UIState>((set) => ({\n  loading: false,\n  setLoading: (loading) => set({ loading }),\n}));\n
