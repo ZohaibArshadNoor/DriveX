@@ -1,1 +1,11 @@
-def get_db():\n    yield None\n
+from app.database.session import SessionLocal
+
+
+async def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+
+    finally:
+        db.close()

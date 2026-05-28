@@ -1,1 +1,28 @@
-def success_response(data=None, message="ok"):\n    return {"message": message, "data": data}\n
+from fastapi.responses import JSONResponse
+
+
+class ApiResponse:
+
+    @staticmethod
+    def success(data=None, message="Success", status_code=200):
+        return JSONResponse(
+            status_code=status_code,
+            content={
+                "success": True,
+                "message": message,
+                "data": data,
+                "errors": None
+            }
+        )
+
+    @staticmethod
+    def error(message="Error", errors=None, status_code=400):
+        return JSONResponse(
+            status_code=status_code,
+            content={
+                "success": False,
+                "message": message,
+                "data": None,
+                "errors": errors
+            }
+        )
