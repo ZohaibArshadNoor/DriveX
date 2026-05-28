@@ -8,3 +8,5 @@ alembic
 psycopg2-binary
 python-multipart
 email-validator
+python-jose[cryptography]
+passlib[bcrypt]

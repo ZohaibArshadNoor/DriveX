@@ -11,11 +11,17 @@ from app.core.exceptions import (
 )
 from app.middleware.cors import setup_cors
 
+from app.database.base import Base
+from app.database.session import engine
+
+import app.models
 
 app = FastAPI(
     title="DriveX API",
     version="1.0.0"
 )
+
+Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def root():
