@@ -6,6 +6,8 @@ from app.core.exceptions import ConflictException
 from app.core.exceptions import UnauthorizedException
 from app.repositories.user_repository import user_repository
 
+from app.models.user import User
+
 
 class AuthService:
 
@@ -19,14 +21,17 @@ class AuthService:
 
         hashed_password = PasswordManager.hash_password(password)
 
+        user = User(
+            full_name=full_name,    
+            email=email,
+            password_hash=hashed_password,
+            role="customer"
+            )
+        
         user = user_repository.create(
             db,
-            {
-                "full_name": full_name,
-                "email": email,
-                "password_hash": hashed_password
-            }
-        )
+            user
+            )
 
         token = JWTHandler.create_access_token(
             {

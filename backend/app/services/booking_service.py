@@ -4,14 +4,17 @@ from sqlalchemy.orm import Session
 
 from app.repositories.booking_repository import booking_repository
 from app.repositories.vehicle_repository import vehicle_repository
+from app.repositories.user_repository import user_repository
 
 from app.schemas.booking import BookingCreateRequest
 
 from app.models.booking import BookingStatus
 
-from app.core.exceptions import NotFoundException
-from app.core.exceptions import ConflictException
-
+from app.core.exceptions import (
+    NotFoundException,
+    ConflictException,
+    BadRequestException
+)
 
 class BookingService:
 
@@ -30,6 +33,21 @@ class BookingService:
         if not vehicle:
             raise NotFoundException(
                 "Vehicle not found"
+            )
+
+        user = user_repository.get_by_id(
+            db,
+            user_id
+        )
+
+        approved_document = any(
+            doc.verification_status.value == "approved"
+            for doc in user.documents
+        )
+
+        if not approved_document:
+            raise BadRequestException(
+                "Approved document required before booking"
             )
 
         has_conflict = booking_repository.check_conflict(

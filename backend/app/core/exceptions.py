@@ -14,3 +14,11 @@ class ConflictException(Exception):
 
 class ValidationException(Exception):
     pass
+
+class BadRequestException(Exception):
+
+    def __init__(
+        self,
+        message: str = "Bad request"
+    ):
+        self.message = message

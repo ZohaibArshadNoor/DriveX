@@ -21,11 +21,12 @@ class BaseRepository(Generic[T]):
             .first()
         )
 
-    def create(self, db: Session, entity_data: dict):
-        entity = self.model(**entity_data)
+    def create(self, db: Session, entity):
 
         db.add(entity)
+
         db.commit()
+
         db.refresh(entity)
 
         return entity
