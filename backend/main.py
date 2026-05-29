@@ -14,6 +14,9 @@ from app.middleware.cors import setup_cors
 from app.database.base import Base
 from app.database.session import engine
 
+from fastapi.responses import JSONResponse
+from app.core.exceptions import ConflictException
+
 import app.models
 
 app = FastAPI(
@@ -85,5 +88,19 @@ async def request_validation_exception_handler(request, exc):
         content={
             "success": False,
             "errors": exc.errors()
+        }
+    )
+    
+@app.exception_handler(ConflictException)
+async def conflict_exception_handler(
+    request,
+    exc: ConflictException
+):
+
+    return JSONResponse(
+        status_code=409,
+        content={
+            "success": False,
+            "message": exc.message
         }
     )

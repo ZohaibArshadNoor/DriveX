@@ -7,7 +7,9 @@ class UnauthorizedException(Exception):
 
 
 class ConflictException(Exception):
-    pass
+
+    def __init__(self, message: str):
+        self.message = message
 
 
 class ValidationException(Exception):
