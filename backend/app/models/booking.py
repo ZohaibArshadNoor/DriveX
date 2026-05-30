@@ -6,6 +6,8 @@ from sqlalchemy import DateTime
 from sqlalchemy import Enum
 from sqlalchemy import DECIMAL
 from sqlalchemy import Text
+from sqlalchemy import Float
+from sqlalchemy import Boolean
 
 from sqlalchemy.orm import relationship
 
@@ -17,13 +19,13 @@ import enum
 
 
 class BookingStatus(str, enum.Enum):
-    pending_review = "pending_review"
-    approved = "approved"
-    rejected = "rejected"
-    cancelled = "cancelled"
-    active = "active"
-    completed = "completed"
-    late_return = "late_return"
+    PENDING = "PENDING"
+    APPROVED_WAITING_ADVANCE = "APPROVED_WAITING_ADVANCE"
+    CONFIRMED = "CONFIRMED"
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+    REJECTED = "REJECTED"
 
 
 class PaymentStatus(str, enum.Enum):
@@ -68,7 +70,7 @@ class Booking(Base):
 
     booking_status = Column(
         Enum(BookingStatus),
-        default=BookingStatus.pending_review,
+        default=BookingStatus.PENDING,
         nullable=False
     )
 
@@ -76,6 +78,26 @@ class Booking(Base):
         Enum(PaymentStatus),
         default=PaymentStatus.pending,
         nullable=False
+    )
+
+    advance_amount = Column(
+        Float,
+        default=0
+    )
+
+    advance_paid = Column(
+        Boolean,
+        default=False
+    )
+
+    advance_paid_at = Column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
+    payment_deadline = Column(
+        DateTime(timezone=True),
+        nullable=True
     )
 
     admin_notes = Column(

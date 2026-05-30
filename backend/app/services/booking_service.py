@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from sqlalchemy.orm import Session
 
@@ -15,6 +15,7 @@ from app.core.exceptions import (
     ConflictException,
     BadRequestException
 )
+
 
 class BookingService:
 
@@ -76,7 +77,8 @@ class BookingService:
             "start_date": payload.start_date,
             "end_date": payload.end_date,
             "total_price": total_price,
-            "booking_status": BookingStatus.pending_review
+            "booking_status": BookingStatus.PENDING,
+            "advance_amount": float(total_price) * 0.3
         }
 
         return booking_repository.create(
@@ -131,8 +133,8 @@ class BookingService:
             )
 
         if booking.booking_status in [
-            BookingStatus.completed,
-            BookingStatus.cancelled
+            BookingStatus.COMPLETED,
+            BookingStatus.CANCELLED
         ]:
             raise ConflictException(
                 "Booking cannot be cancelled"
@@ -142,7 +144,7 @@ class BookingService:
             db,
             booking,
             {
-                "booking_status": BookingStatus.cancelled
+                "booking_status": BookingStatus.CANCELLED
             }
         )
 
@@ -161,7 +163,48 @@ class BookingService:
             db,
             booking,
             {
-                "booking_status": BookingStatus.approved
+                "booking_status": BookingStatus.APPROVED_WAITING_ADVANCE,
+                "payment_deadline": datetime.utcnow() + timedelta(hours=24)
+            }
+        )
+
+    def pay_advance(
+        self,
+        db: Session,
+        booking_id: int,
+        user_id: int
+    ):
+
+        booking = booking_repository.get_by_id(
+            db,
+            booking_id
+        )
+
+        if not booking:
+            raise NotFoundException(
+                "Booking not found"
+            )
+
+        if booking.user_id != user_id:
+            raise ConflictException(
+                "Not allowed"
+            )
+
+        if (
+            booking.booking_status
+            != BookingStatus.APPROVED_WAITING_ADVANCE
+        ):
+            raise BadRequestException(
+                "Booking is not waiting for advance payment"
+            )
+
+        return booking_repository.update(
+            db,
+            booking,
+            {
+                "advance_paid": True,
+                "advance_paid_at": datetime.utcnow(),
+                "booking_status": BookingStatus.CONFIRMED
             }
         )
 

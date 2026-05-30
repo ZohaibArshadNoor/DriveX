@@ -62,8 +62,8 @@ class BookingRepository:
                     Booking.vehicle_id == vehicle_id,
 
                     Booking.booking_status.notin_([
-                        BookingStatus.rejected,
-                        BookingStatus.cancelled
+                        BookingStatus.REJECTED,
+                        BookingStatus.CANCELLED
                     ]),
 
                     Booking.start_date <= end_date,
