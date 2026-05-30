@@ -109,3 +109,69 @@ async def approve_booking(
         data=booking,
         message="Booking approved successfully"
     )
+    
+@router.patch("/{booking_id}/reject")
+async def reject_booking(
+    booking_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_admin)
+):
+
+    booking = booking_service.reject_booking(
+        db,
+        booking_id
+    )
+
+    return ApiResponse.success(
+        data=booking,
+        message="Booking rejected successfully"
+    )
+    
+@router.get("/admin/all")
+async def get_all_bookings(
+    db: Session = Depends(get_db),
+    current_user=Depends(require_admin)
+):
+
+    bookings = booking_service.get_all_bookings(
+        db
+    )
+
+    return ApiResponse.success(
+        data=bookings,
+        message="All bookings fetched"
+    )
+    
+@router.patch("/{booking_id}/pickup")
+async def mark_pickup_vehicle(
+    booking_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_admin)
+):
+
+    booking = booking_service.mark_pickup_vehicle(
+        db,
+        booking_id
+    )
+
+    return ApiResponse.success(
+        data=booking,
+        message="Vehicle picked up"
+    )
+    
+@router.patch("/{booking_id}/complete")
+async def complete_booking(
+    booking_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_admin)
+):
+
+    booking = booking_service.complete_booking(
+        db,
+        booking_id
+    )
+
+    return ApiResponse.success(
+        data=booking,
+        message="Booking completed successfully"
+    )

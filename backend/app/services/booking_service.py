@@ -32,9 +32,7 @@ class BookingService:
         )
 
         if not vehicle:
-            raise NotFoundException(
-                "Vehicle not found"
-            )
+            raise NotFoundException("Vehicle not found")
 
         user = user_repository.get_by_id(
             db,
@@ -63,13 +61,9 @@ class BookingService:
                 "Vehicle already booked for selected dates"
             )
 
-        total_days = (
-            payload.end_date - payload.start_date
-        ).days
+        total_days = (payload.end_date - payload.start_date).days
 
-        total_price = (
-            total_days * vehicle.price_per_day
-        )
+        total_price = total_days * vehicle.price_per_day
 
         booking_data = {
             "user_id": user_id,
@@ -81,83 +75,43 @@ class BookingService:
             "advance_amount": float(total_price) * 0.3
         }
 
-        return booking_repository.create(
-            db,
-            booking_data
-        )
+        return booking_repository.create(db, booking_data)
 
-    def get_user_bookings(
-        self,
-        db: Session,
-        user_id: int
-    ):
+    def get_user_bookings(self, db: Session, user_id: int):
 
-        return booking_repository.get_user_bookings(
-            db,
-            user_id
-        )
+        return booking_repository.get_user_bookings(db, user_id)
 
-    def get_booking_by_id(
-        self,
-        db: Session,
-        booking_id: int
-    ):
+    def get_booking_by_id(self, db: Session, booking_id: int):
 
-        booking = booking_repository.get_by_id(
-            db,
-            booking_id
-        )
+        booking = booking_repository.get_by_id(db, booking_id)
 
         if not booking:
-            raise NotFoundException(
-                "Booking not found"
-            )
+            raise NotFoundException("Booking not found")
 
         return booking
 
-    def cancel_booking(
-        self,
-        db: Session,
-        booking_id: int,
-        user_id: int
-    ):
+    def cancel_booking(self, db: Session, booking_id: int, user_id: int):
 
-        booking = self.get_booking_by_id(
-            db,
-            booking_id
-        )
+        booking = self.get_booking_by_id(db, booking_id)
 
         if booking.user_id != user_id:
-            raise ConflictException(
-                "You cannot cancel this booking"
-            )
+            raise ConflictException("You cannot cancel this booking")
 
         if booking.booking_status in [
             BookingStatus.COMPLETED,
             BookingStatus.CANCELLED
         ]:
-            raise ConflictException(
-                "Booking cannot be cancelled"
-            )
+            raise ConflictException("Booking cannot be cancelled")
 
         return booking_repository.update(
             db,
             booking,
-            {
-                "booking_status": BookingStatus.CANCELLED
-            }
+            {"booking_status": BookingStatus.CANCELLED}
         )
 
-    def approve_booking(
-        self,
-        db: Session,
-        booking_id: int
-    ):
+    def approve_booking(self, db: Session, booking_id: int):
 
-        booking = self.get_booking_by_id(
-            db,
-            booking_id
-        )
+        booking = self.get_booking_by_id(db, booking_id)
 
         return booking_repository.update(
             db,
@@ -168,32 +122,17 @@ class BookingService:
             }
         )
 
-    def pay_advance(
-        self,
-        db: Session,
-        booking_id: int,
-        user_id: int
-    ):
+    def pay_advance(self, db: Session, booking_id: int, user_id: int):
 
-        booking = booking_repository.get_by_id(
-            db,
-            booking_id
-        )
+        booking = booking_repository.get_by_id(db, booking_id)
 
         if not booking:
-            raise NotFoundException(
-                "Booking not found"
-            )
+            raise NotFoundException("Booking not found")
 
         if booking.user_id != user_id:
-            raise ConflictException(
-                "Not allowed"
-            )
+            raise ConflictException("Not allowed")
 
-        if (
-            booking.booking_status
-            != BookingStatus.APPROVED_WAITING_ADVANCE
-        ):
+        if booking.booking_status != BookingStatus.APPROVED_WAITING_ADVANCE:
             raise BadRequestException(
                 "Booking is not waiting for advance payment"
             )
@@ -206,6 +145,45 @@ class BookingService:
                 "advance_paid_at": datetime.utcnow(),
                 "booking_status": BookingStatus.CONFIRMED
             }
+        )
+
+    def reject_booking(self, db: Session, booking_id: int):
+
+        booking = self.get_booking_by_id(db, booking_id)
+
+        return booking_repository.update(
+            db,
+            booking,
+            {"booking_status": BookingStatus.REJECTED}
+        )
+
+    def get_all_bookings(self, db: Session):
+
+        return booking_repository.get_all(db)
+
+    def mark_pickup_vehicle(self, db: Session, booking_id: int):
+
+        booking = self.get_booking_by_id(db, booking_id)
+
+        return booking_repository.update(
+            db,
+            booking,
+            {"booking_status": BookingStatus.ACTIVE}
+        )
+
+    def complete_booking(self, db: Session, booking_id: int):
+
+        booking = self.get_booking_by_id(db, booking_id)
+
+        if booking.booking_status != BookingStatus.ACTIVE:
+            raise BadRequestException(
+                "Only active bookings can be completed"
+            )
+
+        return booking_repository.update(
+            db,
+            booking,
+            {"booking_status": BookingStatus.COMPLETED}
         )
 
 
