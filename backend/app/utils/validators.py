@@ -1,1 +1,1 @@
-def validate_email(email: str) -> bool:\n    return "@" in email\n
+# def validate_email(email: str) -> bool:\n    return "@" in email\n
