@@ -1,22 +1,22 @@
 import axios from "axios";
-import { API_BASE_URL } from "../config/env";
 
-const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+const api = axios.create({ baseURL: "http://localhost:8000/api/v1" });
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
 });
 
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      config.headers.Authorization =
-        `Bearer ${token}`;
+api.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.clear();
+      window.location.href = "/login";
     }
-
-    return config;
+    return Promise.reject(err);
   },
-  (error) => Promise.reject(error)
 );
 
-export default axiosInstance;
+export default api;
