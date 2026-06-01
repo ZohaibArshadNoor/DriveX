@@ -1,13 +1,9 @@
 /**
  * DriveX — Navbar.jsx
  * Place at: src/components/shared/Navbar.jsx
- * 
- * Features:
- * - Transparent on hero, solid on scroll
- * - GSAP entrance animation
- * - Active route highlighting
- * - Responsive mobile menu
- * - Magnetic logo
+ *
+ * Updated: Customer desktop nav now shows Dashboard, Bookings, Documents.
+ *          Dropdown also includes them. Theme / RBAC unchanged.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -32,6 +28,19 @@ export default function Navbar() {
   const navRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   // Scroll detection
   useEffect(() => {
@@ -52,6 +61,7 @@ export default function Navbar() {
     logout();
     navigate("/");
     setMobileOpen(false);
+    setUserMenuOpen(false);
   };
 
   const isActive = (path) => location.pathname === path;
@@ -79,10 +89,23 @@ export default function Navbar() {
     </Link>
   );
 
+  // Quick links inside dropdown
+  const dropdownLinks = [];
+  if (user?.role === "customer") {
+    dropdownLinks.push(
+      { to: "/dashboard", label: "Dashboard", icon: "📊" },
+      { to: "/bookings", label: "My Bookings", icon: "📋" },
+      { to: "/documents", label: "My Documents", icon: "🪪" }
+    );
+  } else if (user?.role === "admin") {
+    dropdownLinks.push({ to: "/admin", label: "Admin Dashboard", icon: "⚙️" });
+  }
+
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Barlow+Condensed:wght@900&display=swap');
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
       `}</style>
 
       <nav ref={navRef} style={{
@@ -112,16 +135,27 @@ export default function Navbar() {
           }} />
         </Link>
 
-        <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
-
         {/* Desktop Links */}
         <div style={{
           display: "flex", alignItems: "center", gap: 32,
         }} className="desktop-nav">
-          <NavLink to="/vehicles" label="Fleet" />
+
           {isAuthenticated && user?.role === "customer" && (
-            <NavLink to="/bookings" label="My Bookings" />
+            <>
+              <NavLink to="/dashboard" label="Dashboard" />
+            </>
           )}
+
+          <NavLink to="/vehicles" label="Fleet" />
+
+          {/* ── ADDED: customer links in main nav ──────────────────────── */}
+          {isAuthenticated && user?.role === "customer" && (
+            <>
+              <NavLink to="/bookings" label="My Bookings" />
+              <NavLink to="/documents" label="My Documents" />
+            </>
+          )}
+
           {isAuthenticated && user?.role === "admin" && (
             <NavLink to="/admin" label="Dashboard" />
           )}
@@ -130,28 +164,168 @@ export default function Navbar() {
         {/* Desktop Auth */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }} className="desktop-nav">
           {isAuthenticated ? (
-            <>
-              <span style={{ fontSize: 12, color: T.gray3, letterSpacing: 0.5 }}>
-                {user?.full_name?.split(" ")[0]}
-              </span>
-              {user?.role === "admin" && (
+            <div ref={userMenuRef} style={{ position: "relative" }}>
+              {/* User button */}
+              <button
+                onClick={() => setUserMenuOpen(p => !p)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "6px 14px 6px 10px",
+                  background: "rgba(255,255,255,0.04)",
+                  border: `1px solid ${userMenuOpen ? T.primary : T.border}`,
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  color: T.white,
+                  transition: "border-color 0.2s, background 0.2s",
+                }}
+                onMouseEnter={e => !userMenuOpen && (e.currentTarget.style.borderColor = T.white)}
+                onMouseLeave={e => !userMenuOpen && (e.currentTarget.style.borderColor = T.border)}
+              >
+                {/* Person SVG icon */}
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="5" />
+                  <path d="M3 21v-2a7 7 0 0 1 7-7h4a7 7 0 0 1 7 7v2" />
+                </svg>
                 <span style={{
-                  fontSize: 10, padding: "2px 8px", borderRadius: 10,
-                  background: "rgba(6,182,212,0.15)", border: `1px solid ${T.primary}`,
-                  color: T.primary, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase",
-                }}>Admin</span>
+                  fontSize: 13, fontWeight: 600,
+                  fontFamily: "'Rajdhani', sans-serif",
+                  color: T.white,
+                }}>
+                  {user?.full_name?.split(" ")[0]}
+                </span>
+                {user?.role === "admin" && (
+                  <span style={{
+                    fontSize: 10, padding: "2px 8px", borderRadius: 10,
+                    background: "rgba(6,182,212,0.15)", border: `1px solid ${T.primary}`,
+                    color: T.primary, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase",
+                  }}>Admin</span>
+                )}
+                {/* Chevron */}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.gray3} strokeWidth="2" style={{ transition: "transform 0.2s", transform: userMenuOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {/* Dropdown (unchanged, but you may keep) */}
+              {userMenuOpen && (
+                <div style={{
+                  position: "absolute",
+                  top: "calc(100% + 8px)",
+                  right: 0,
+                  width: 280,
+                  background: "rgba(5,7,15,0.97)",
+                  backdropFilter: "blur(20px)",
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 12,
+                  padding: "18px 20px",
+                  boxShadow: "0 16px 48px rgba(0,0,0,0.7)",
+                  zIndex: 1001,
+                  fontFamily: "'Rajdhani', sans-serif",
+                }}>
+                  {/* User info */}
+                  <div style={{
+                    borderBottom: `1px solid ${T.border}`,
+                    paddingBottom: 14,
+                    marginBottom: 12,
+                  }}>
+                    <div style={{
+                      fontSize: 16,
+                      fontWeight: 700,
+                      color: T.white,
+                      wordBreak: "break-word",
+                      lineHeight: 1.3,
+                    }}>
+                      {user?.full_name}
+                    </div>
+                    <div style={{
+                      fontSize: 13,
+                      color: T.gray3,
+                      fontFamily: "'JetBrains Mono', monospace",
+                      marginTop: 4,
+                      wordBreak: "break-word",
+                    }}>
+                      {user?.email}
+                    </div>
+                    {user?.role === "admin" && (
+                      <div style={{
+                        fontSize: 11,
+                        color: T.primary,
+                        marginTop: 6,
+                        textTransform: "uppercase",
+                        fontWeight: 700,
+                        letterSpacing: 0.5,
+                      }}>
+                        Administrator
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Page links */}
+                  {dropdownLinks.map(link => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setUserMenuOpen(false)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "10px 12px",
+                        borderRadius: 6,
+                        marginBottom: 4,
+                        textDecoration: "none",
+                        color: T.gray3,
+                        fontSize: 15,
+                        fontWeight: 600,
+                        transition: "background 0.2s, color 0.2s",
+                        background: "transparent",
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = "rgba(6,182,212,0.08)";
+                        e.currentTarget.style.color = T.white;
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.color = T.gray3;
+                      }}
+                    >
+                      <span style={{ fontSize: 16 }}>{link.icon}</span> {link.label}
+                    </Link>
+                  ))}
+
+                  {/* Logout button */}
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      width: "100%",
+                      padding: "12px 0",
+                      marginTop: 4,
+                      background: "none",
+                      border: "none",
+                      color: T.gray3,
+                      fontSize: 15,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      textAlign: "left",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      fontFamily: "'Rajdhani', sans-serif",
+                      transition: "color 0.2s",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = T.red}
+                    onMouseLeave={e => e.currentTarget.style.color = T.gray3}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Sign Out
+                  </button>
+                </div>
               )}
-              <button onClick={handleLogout} style={{
-                padding: "7px 18px", fontSize: 12,
-                fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, letterSpacing: 1,
-                background: "transparent", border: `1px solid ${T.border}`,
-                color: T.gray3, borderRadius: 4, cursor: "pointer",
-                textTransform: "uppercase", transition: "all 0.2s",
-              }}
-                onMouseEnter={e => { e.target.style.borderColor = T.white; e.target.style.color = T.white; }}
-                onMouseLeave={e => { e.target.style.borderColor = T.border; e.target.style.color = T.gray3; }}
-              >Logout</button>
-            </>
+            </div>
           ) : (
             <>
               <Link to="/login" style={{
@@ -203,11 +377,21 @@ export default function Navbar() {
               style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
               Fleet
             </Link>
-            {isAuthenticated && user?.role !== "admin" && (
-              <Link to="/bookings" onClick={() => setMobileOpen(false)}
-                style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
-                My Bookings
-              </Link>
+            {isAuthenticated && user?.role === "customer" && (
+              <>
+                <Link to="/dashboard" onClick={() => setMobileOpen(false)}
+                  style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
+                  Dashboard
+                </Link>
+                <Link to="/bookings" onClick={() => setMobileOpen(false)}
+                  style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
+                  My Bookings
+                </Link>
+                <Link to="/documents" onClick={() => setMobileOpen(false)}
+                  style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
+                  My Documents
+                </Link>
+              </>
             )}
             {isAuthenticated ? (
               <button onClick={handleLogout}

@@ -701,8 +701,8 @@ export default function LandingPage() {
         <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>
           Drive<span style={{ color: 'var(--teal)' }}>X</span>
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-          © 2026 DriveX · Bahria University KHI · BSE-6C
+        <div style={{ fontSize: 16, color: 'var(--text-muted)' }}>
+          © 2026 DriveX · Bahria University KHI · Zohaib Arshad Noor
         </div>
         <div style={{ display: 'flex', gap: 16 }}>
           {[['Fleet', '/vehicles'], ['Login', '/login'], ['Register', '/register']].map(([l, to]) => (
