@@ -293,7 +293,7 @@ export default function LoginPage() {
             </div>
 
             {/* Dev hint */}
-            <div data-field style={{
+            {/* <div data-field style={{
               marginTop: 16, padding: "10px 14px",
               background: "rgba(6,182,212,0.05)",
               border: "1px dashed rgba(6,182,212,0.2)", borderRadius: 6,
@@ -302,7 +302,7 @@ export default function LoginPage() {
                 <div style={{ color: T.primary, marginBottom: 2 }}>// Demo credentials</div>
                 <div>Admin: admin@drivex.com / Admin@123</div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

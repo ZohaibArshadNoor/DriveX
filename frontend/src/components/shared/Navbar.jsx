@@ -2,8 +2,8 @@
  * DriveX — Navbar.jsx
  * Place at: src/components/shared/Navbar.jsx
  *
- * Updated: Customer desktop nav now shows Dashboard, Bookings, Documents.
- *          Dropdown also includes them. Theme / RBAC unchanged.
+ * Updated: RBAC‑aware center links and dropdown for guests, customers, and admins.
+ *          Keeps the same theme and styling.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -89,7 +89,7 @@ export default function Navbar() {
     </Link>
   );
 
-  // Quick links inside dropdown
+  // ── Quick links inside dropdown (same for mobile menu) ──────────────────
   const dropdownLinks = [];
   if (user?.role === "customer") {
     dropdownLinks.push(
@@ -98,7 +98,13 @@ export default function Navbar() {
       { to: "/documents", label: "My Documents", icon: "🪪" }
     );
   } else if (user?.role === "admin") {
-    dropdownLinks.push({ to: "/admin", label: "Admin Dashboard", icon: "⚙️" });
+    dropdownLinks.push(
+      { to: "/admin", label: "Dashboard", icon: "📊" },
+      { to: "/admin/bookings", label: "Bookings", icon: "📋" },
+      { to: "/admin/vehicles", label: "Vehicles", icon: "🚗" },
+      { to: "/admin/users", label: "Users", icon: "👥" },
+      { to: "/admin/documents", label: "Documents", icon: "🪪" }
+    );
   }
 
   return (
@@ -135,33 +141,34 @@ export default function Navbar() {
           }} />
         </Link>
 
-        {/* Desktop Links */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 32,
-        }} className="desktop-nav">
+        {/* ── Desktop Links (center) ──────────────────────────────────── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }} className="desktop-nav">
 
+          {/* Everyone sees Fleet */}
+          <NavLink to="/vehicles" label="Fleet" />
+
+          {/* Customer links */}
           {isAuthenticated && user?.role === "customer" && (
             <>
               <NavLink to="/dashboard" label="Dashboard" />
-            </>
-          )}
-
-          <NavLink to="/vehicles" label="Fleet" />
-
-          {/* ── ADDED: customer links in main nav ──────────────────────── */}
-          {isAuthenticated && user?.role === "customer" && (
-            <>
               <NavLink to="/bookings" label="My Bookings" />
               <NavLink to="/documents" label="My Documents" />
             </>
           )}
 
+          {/* Admin links */}
           {isAuthenticated && user?.role === "admin" && (
-            <NavLink to="/admin" label="Dashboard" />
+            <>
+              <NavLink to="/admin" label="Dashboard" />
+              <NavLink to="/admin/bookings" label="Bookings" />
+              <NavLink to="/admin/vehicles" label="Vehicles" />
+              <NavLink to="/admin/users" label="Users" />
+              <NavLink to="/admin/documents" label="Documents" />
+            </>
           )}
         </div>
 
-        {/* Desktop Auth */}
+        {/* ── Desktop Auth / User menu ────────────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }} className="desktop-nav">
           {isAuthenticated ? (
             <div ref={userMenuRef} style={{ position: "relative" }}>
@@ -206,7 +213,7 @@ export default function Navbar() {
                 </svg>
               </button>
 
-              {/* Dropdown (unchanged, but you may keep) */}
+              {/* Dropdown */}
               {userMenuOpen && (
                 <div style={{
                   position: "absolute",
@@ -260,7 +267,7 @@ export default function Navbar() {
                     )}
                   </div>
 
-                  {/* Page links */}
+                  {/* Page links – same as center for the user's role */}
                   {dropdownLinks.map(link => (
                     <Link
                       key={link.to}
@@ -377,6 +384,7 @@ export default function Navbar() {
               style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
               Fleet
             </Link>
+
             {isAuthenticated && user?.role === "customer" && (
               <>
                 <Link to="/dashboard" onClick={() => setMobileOpen(false)}
@@ -393,6 +401,32 @@ export default function Navbar() {
                 </Link>
               </>
             )}
+
+            {isAuthenticated && user?.role === "admin" && (
+              <>
+                <Link to="/admin" onClick={() => setMobileOpen(false)}
+                  style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
+                  Dashboard
+                </Link>
+                <Link to="/admin/bookings" onClick={() => setMobileOpen(false)}
+                  style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
+                  Bookings
+                </Link>
+                <Link to="/admin/vehicles" onClick={() => setMobileOpen(false)}
+                  style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
+                  Vehicles
+                </Link>
+                <Link to="/admin/users" onClick={() => setMobileOpen(false)}
+                  style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
+                  Users
+                </Link>
+                <Link to="/admin/documents" onClick={() => setMobileOpen(false)}
+                  style={{ color: T.white, textDecoration: "none", fontSize: 18, fontWeight: 700 }}>
+                  Documents
+                </Link>
+              </>
+            )}
+
             {isAuthenticated ? (
               <button onClick={handleLogout}
                 style={{ color: T.primary, background: "none", border: "none", cursor: "pointer", fontSize: 18, fontWeight: 700, textAlign: "left" }}>

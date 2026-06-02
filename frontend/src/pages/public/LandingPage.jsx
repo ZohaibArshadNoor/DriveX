@@ -1,3 +1,494 @@
+// /**
+//  * LandingPage.jsx  v3 — Cinematic Edition
+//  * Place at: src/pages/public/LandingPage.jsx
+//  *
+//  * Orchestrates all landing sections into one seamless scroll experience.
+//  * Handles:
+//  *  - Lenis smooth scroll (global)
+//  *  - Mouse tracking for 3D hero
+//  *  - RBAC-aware nav (existing auth system untouched)
+//  *  - Lazy loading of heavy components
+//  *  - GSAP global animations
+//  *
+//  * DO NOT modify: API endpoints, booking flow, RBAC logic, auth system.
+//  *
+//  * Lazy imports:
+//  *  Heavy 3D sections use React.lazy + Suspense for code splitting.
+//  *
+//  * Font (add to your index.html <head>):
+//  *   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+//  */
+
+// import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+// import { Link, useNavigate } from 'react-router-dom';
+// import { gsap } from 'gsap';
+// import { ScrollTrigger } from 'gsap/ScrollTrigger';
+// import { useLenis } from '../../hooks/useLenis';
+// import { useScrollAnimations } from '../../hooks/useScrollAnimations';
+
+// gsap.registerPlugin(ScrollTrigger);
+
+// /* ── Lazy-loaded heavy sections ──────────────────────────── */
+// const HeroScene      = lazy(() => import('../../components/landing/HeroScene'));
+// const ScrollStory    = lazy(() => import('../../components/landing/ScrollStory'));
+// const FleetShowcase  = lazy(() => import('../../components/landing/FleetShowcase'));
+// const HolographicStats = lazy(() => import('../../components/landing/HolographicStats'));
+// const BookingJourney = lazy(() => import('../../components/landing/BookingJourney'));
+// const FinalCTA       = lazy(() => import('../../components/landing/FinalCTA'));
+
+// /* ── Section fallback ────────────────────────────────────── */
+// function SectionSkeleton({ height = '60vh' }) {
+//   return (
+//     <div style={{
+//       height, background: '#010810',
+//       display: 'flex', alignItems: 'center', justifyContent: 'center',
+//     }}>
+//       <div style={{
+//         width: 120, height: 1,
+//         background: 'linear-gradient(90deg, transparent, rgba(14,165,233,0.4), transparent)',
+//         animation: 'skeleton-pulse 1.5s ease infinite',
+//       }} />
+//       <style>{`
+//         @keyframes skeleton-pulse {
+//           0%, 100% { opacity: 0.3; transform: scaleX(0.5); }
+//           50%       { opacity: 1;   transform: scaleX(1); }
+//         }
+//       `}</style>
+//     </div>
+//   );
+// }
+
+// /* ── Navbar ──────────────────────────────────────────────── */
+// function Navbar({ user, scrolled }) {
+//   const navigate = useNavigate();
+//   const [menuOpen, setMenuOpen] = useState(false);
+
+//   return (
+//     <nav style={{
+//       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+//       padding: '0 7vw',
+//       height: 64,
+//       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+//       background: scrolled ? 'rgba(1,8,16,0.92)' : 'transparent',
+//       backdropFilter: scrolled ? 'blur(20px)' : 'none',
+//       borderBottom: scrolled ? '1px solid rgba(14,165,233,0.08)' : 'none',
+//       transition: 'all 0.4s ease',
+//     }}>
+//       {/* Logo */}
+//       <Link to="/" style={{ textDecoration: 'none' }}>
+//         <span style={{
+//           fontFamily: "'Orbitron', monospace",
+//           fontSize: 22, fontWeight: 900,
+//           color: '#f1f5f9', letterSpacing: -0.5,
+//         }}>
+//           Drive<span style={{ color: '#0ea5e9' }}>X</span>
+//         </span>
+//       </Link>
+
+//       {/* Desktop links */}
+//       <div style={{
+//         display: 'flex', alignItems: 'center', gap: 8,
+//       }}>
+//         <NavLink to="/vehicles">Fleet</NavLink>
+
+//         {!user ? (
+//           <>
+//             <NavLink to="/login">Login</NavLink>
+//             <PillButton onClick={() => navigate('/register')}>Register →</PillButton>
+//           </>
+//         ) : (
+//           <>
+//             {/* Existing RBAC navigation preserved */}
+//             {user.role === 'admin' && <NavLink to="/admin">Admin</NavLink>}
+//             {user.role === 'customer' && <NavLink to="/dashboard">Dashboard</NavLink>}
+//             <PillButton onClick={() => navigate('/dashboard')}>My Bookings</PillButton>
+//           </>
+//         )}
+//       </div>
+//     </nav>
+//   );
+// }
+
+// function NavLink({ to, children }) {
+//   return (
+//     <Link to={to} style={{
+//       fontFamily: 'monospace', fontSize: 10,
+//       color: '#94a3b8', textDecoration: 'none',
+//       letterSpacing: 2, textTransform: 'uppercase',
+//       padding: '8px 14px',
+//       transition: 'color 0.2s',
+//     }}
+//       onMouseEnter={(e) => e.currentTarget.style.color = '#0ea5e9'}
+//       onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+//     >
+//       {children}
+//     </Link>
+//   );
+// }
+
+// function PillButton({ onClick, children }) {
+//   const [hov, setHov] = useState(false);
+//   return (
+//     <button
+//       onClick={onClick}
+//       onMouseEnter={() => setHov(true)}
+//       onMouseLeave={() => setHov(false)}
+//       style={{
+//         padding: '8px 20px',
+//         fontFamily: 'monospace', fontSize: 10,
+//         fontWeight: 700, letterSpacing: 2,
+//         textTransform: 'uppercase',
+//         border: '1px solid rgba(14,165,233,0.3)',
+//         borderRadius: 4,
+//         background: hov ? 'rgba(14,165,233,0.12)' : 'transparent',
+//         color: '#0ea5e9',
+//         cursor: 'pointer',
+//         transition: 'all 0.2s',
+//       }}
+//     >
+//       {children}
+//     </button>
+//   );
+// }
+
+// /* ── Hero overlay text ───────────────────────────────────── */
+// function HeroText({ navigate }) {
+//   const ref = useRef();
+
+//   useEffect(() => {
+//     if (!ref.current) return;
+//     const els = ref.current.querySelectorAll('[data-reveal]');
+//     gsap.fromTo(els,
+//       { opacity: 0, y: 70 },
+//       { opacity: 1, y: 0, stagger: 0.15, duration: 1.2, ease: 'power4.out', delay: 0.8 }
+//     );
+//   }, []);
+
+//   return (
+//     <div ref={ref} style={{
+//       position: 'absolute', zIndex: 10,
+//       top: '50%', transform: 'translateY(-50%)',
+//       left: 0, padding: '0 7vw',
+//       maxWidth: 700,
+//     }}>
+//       {/* Badge */}
+//       <div data-reveal style={{ opacity: 0, marginBottom: 24 }}>
+//         <span style={{
+//           display: 'inline-flex', alignItems: 'center', gap: 8,
+//           padding: '5px 14px', borderRadius: 20,
+//           background: 'rgba(14,165,233,0.08)',
+//           border: '1px solid rgba(14,165,233,0.2)',
+//           fontFamily: 'monospace', fontSize: 9,
+//           color: '#0ea5e9', letterSpacing: 4,
+//           textTransform: 'uppercase',
+//         }}>
+//           <span style={{
+//             width: 5, height: 5, borderRadius: '50%',
+//             background: '#10b981',
+//             animation: 'pulse-hero 2s ease infinite',
+//           }} />
+//           Premium Car Rental · Pakistan
+//         </span>
+//       </div>
+
+//       {/* Main headline */}
+//       <div data-reveal style={{ opacity: 0 }}>
+//         <h1 style={{
+//           fontFamily: "'Orbitron', monospace",
+//           fontSize: 'clamp(48px, 8vw, 100px)',
+//           fontWeight: 900,
+//           lineHeight: 0.92,
+//           letterSpacing: -3,
+//           color: '#f1f5f9',
+//           marginBottom: 12,
+//         }}>
+//           Redefine<br />
+//           <span style={{
+//             background: 'linear-gradient(90deg, #0ea5e9, #22d3ee, #10b981)',
+//             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+//             backgroundSize: '200% 100%',
+//             animation: 'aurora-sweep 4s ease infinite',
+//           }}>How You</span><br />
+//           Drive.
+//         </h1>
+//       </div>
+
+//       {/* Subline */}
+//       <div data-reveal style={{ opacity: 0, marginTop: 24, marginBottom: 40 }}>
+//         <p style={{
+//           fontSize: 15, color: '#64748b',
+//           lineHeight: 1.75, maxWidth: 380,
+//         }}>
+//           Handpicked premium fleet. Transparent Rs pricing.
+//           Book in minutes, drive in hours.
+//         </p>
+//       </div>
+
+//       {/* Buttons */}
+//       <div data-reveal style={{ opacity: 0, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+//         <HeroButton onClick={() => navigate('/vehicles')} primary>
+//           Explore Fleet →
+//         </HeroButton>
+//         <HeroButton onClick={() => navigate('/register')}>
+//           Register Free
+//         </HeroButton>
+//       </div>
+
+//       {/* Mini stats */}
+//       <div data-reveal style={{
+//         opacity: 0, marginTop: 44,
+//         display: 'flex', gap: 32, flexWrap: 'wrap',
+//       }}>
+//         {[['50+', 'Vehicles'], ['2,400+', 'Happy Renters'], ['Rs 2,800', 'Avg/Day']].map(([n, l]) => (
+//           <div key={l}>
+//             <div style={{
+//               fontFamily: "'Orbitron', monospace",
+//               fontSize: 22, fontWeight: 900,
+//               color: '#0ea5e9', lineHeight: 1,
+//             }}>{n}</div>
+//             <div style={{
+//               fontSize: 9, color: '#475569',
+//               letterSpacing: 2, textTransform: 'uppercase',
+//               marginTop: 4, fontFamily: 'monospace',
+//             }}>{l}</div>
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function HeroButton({ children, onClick, primary = false }) {
+//   const [hov, setHov] = useState(false);
+//   return (
+//     <button
+//       onClick={onClick}
+//       onMouseEnter={() => setHov(true)}
+//       onMouseLeave={() => setHov(false)}
+//       style={{
+//         padding: '12px 28px',
+//         fontFamily: "'Orbitron', monospace",
+//         fontSize: 11, fontWeight: 800, letterSpacing: 1.5,
+//         textTransform: 'uppercase',
+//         border: primary ? 'none' : '1px solid rgba(14,165,233,0.25)',
+//         borderRadius: 6,
+//         background: primary
+//           ? hov ? 'linear-gradient(135deg, #0284c7, #0ea5e9)' : 'linear-gradient(135deg, #0ea5e9, #22d3ee)'
+//           : hov ? 'rgba(14,165,233,0.08)' : 'transparent',
+//         color: primary ? '#020c18' : '#f1f5f9',
+//         cursor: 'pointer',
+//         transition: 'all 0.25s',
+//         boxShadow: primary && hov ? '0 0 40px rgba(14,165,233,0.5)' : 'none',
+//         transform: hov ? 'translateY(-2px)' : 'translateY(0)',
+//       }}
+//     >
+//       {children}
+//     </button>
+//   );
+// }
+
+// /* ── Cursor tracker hint ─────────────────────────────────── */
+// function ScrollCue() {
+//   return (
+//     <div style={{
+//       position: 'absolute', bottom: 32, left: '50%',
+//       transform: 'translateX(-50%)', zIndex: 10,
+//       display: 'flex', flexDirection: 'column',
+//       alignItems: 'center', gap: 8,
+//     }}>
+//       <span style={{
+//         fontFamily: 'monospace', fontSize: 8,
+//         color: 'rgba(14,165,233,0.35)',
+//         letterSpacing: 4, textTransform: 'uppercase',
+//       }}>Scroll</span>
+//       <div style={{
+//         width: 1, height: 48,
+//         background: 'linear-gradient(to bottom, #0ea5e9, transparent)',
+//         animation: 'scroll-cue 2s ease-in-out infinite',
+//       }} />
+//     </div>
+//   );
+// }
+
+// /* ── MAIN LANDING PAGE ───────────────────────────────────── */
+// export default function LandingPage() {
+//   const navigate    = useNavigate();
+//   const mouseRef    = useRef({ x: 0, y: 0 });
+//   const pageRef     = useRef(null);
+//   const [scrolled, setScrolled] = useState(false);
+
+//   /*
+//    * Auth / user state:
+//    * Replace this with your actual auth context / hook.
+//    * e.g.: const { user } = useAuth();
+//    * This preserves RBAC without modifying the auth system.
+//    */
+//   const user = null; /* <-- replace with useAuth().user or similar */
+
+//   /* Lenis smooth scroll */
+//   useLenis();
+
+//   /* Scroll animations for data-* elements */
+//   useScrollAnimations(pageRef, []);
+
+//   /* Navbar scroll detection */
+//   useEffect(() => {
+//     const handleScroll = () => setScrolled(window.scrollY > 60);
+//     window.addEventListener('scroll', handleScroll, { passive: true });
+//     return () => window.removeEventListener('scroll', handleScroll);
+//   }, []);
+
+//   /* Mouse tracking (for HeroScene parallax) */
+//   useEffect(() => {
+//     const handle = (e) => {
+//       mouseRef.current = {
+//         x: (e.clientX / window.innerWidth)  * 2 - 1,
+//         y: -(e.clientY / window.innerHeight) * 2 + 1,
+//       };
+//     };
+//     window.addEventListener('mousemove', handle);
+//     return () => window.removeEventListener('mousemove', handle);
+//   }, []);
+
+//   /* Refresh ScrollTrigger on resize */
+//   useEffect(() => {
+//     const handle = () => ScrollTrigger.refresh();
+//     window.addEventListener('resize', handle);
+//     return () => window.removeEventListener('resize', handle);
+//   }, []);
+
+//   return (
+//     <div
+//       ref={pageRef}
+//       style={{
+//         background: '#020c18',
+//         minHeight: '100vh',
+//         overflowX: 'hidden',
+//         fontFamily: "'Orbitron', monospace",
+//         color: '#f1f5f9',
+//       }}
+//     >
+//       {/* Global font + keyframes */}
+//       <style>{`
+//         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&display=swap');
+
+//         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+//         @keyframes pulse-hero {
+//           0%, 100% { opacity: 1; transform: scale(1); }
+//           50%       { opacity: 0.4; transform: scale(0.7); }
+//         }
+//         @keyframes aurora-sweep {
+//           0%, 100% { background-position: 0% 50%; }
+//           50%       { background-position: 100% 50%; }
+//         }
+//         @keyframes scroll-cue {
+//           0%   { opacity: 0; transform: scaleY(0); transform-origin: top; }
+//           40%  { opacity: 1; transform: scaleY(1); }
+//           100% { opacity: 0; transform: scaleY(1) translateY(20px); }
+//         }
+//         @keyframes blink-pulse {
+//           0%, 100% { opacity: 1; }
+//           50%       { opacity: 0.3; }
+//         }
+
+//         /* Remove focus outlines on canvas elements */
+//         canvas { outline: none; }
+
+//         /* Smooth scrollbar styling */
+//         ::-webkit-scrollbar { width: 4px; }
+//         ::-webkit-scrollbar-track { background: #010810; }
+//         ::-webkit-scrollbar-thumb { background: rgba(14,165,233,0.3); border-radius: 4px; }
+//         ::-webkit-scrollbar-thumb:hover { background: rgba(14,165,233,0.6); }
+//       `}</style>
+
+//       {/* ── Fixed Navbar ─────────────────────────────────── */}
+//       <Navbar user={user} scrolled={scrolled} />
+
+//       {/* ── SECTION 1: Hero ──────────────────────────────── */}
+//       <section style={{
+//         position: 'relative', height: '100vh', overflow: 'hidden',
+//       }}>
+//         {/* 3D Canvas */}
+//         <Suspense fallback={
+//           <div style={{
+//             position: 'absolute', inset: 0,
+//             background: 'radial-gradient(ellipse at 40% 50%, #031828, #010810)',
+//             display: 'flex', alignItems: 'center', justifyContent: 'center',
+//           }}>
+//             <div style={{
+//               fontFamily: 'monospace', fontSize: 10,
+//               color: 'rgba(14,165,233,0.4)', letterSpacing: 4,
+//               textTransform: 'uppercase',
+//               animation: 'blink-pulse 1.5s ease infinite',
+//             }}>
+//               Initializing Scene…
+//             </div>
+//           </div>
+//         }>
+//           <HeroScene mousePos={mouseRef} />
+//         </Suspense>
+
+//         {/* Left gradient vignette */}
+//         <div style={{
+//           position: 'absolute', inset: 0, pointerEvents: 'none',
+//           background: 'linear-gradient(90deg, rgba(1,8,16,0.9) 0%, rgba(1,8,16,0.55) 42%, transparent 68%)',
+//         }} />
+
+//         {/* Bottom fade to next section */}
+//         <div style={{
+//           position: 'absolute', bottom: 0, left: 0, right: 0, height: 180,
+//           background: 'linear-gradient(to top, #020c18, transparent)',
+//           pointerEvents: 'none',
+//         }} />
+
+//         {/* Hero text overlay */}
+//         <HeroText navigate={navigate} />
+
+//         {/* Cursor hint */}
+//         <div style={{
+//           position: 'absolute', bottom: 100, right: '6vw',
+//           fontFamily: 'monospace', fontSize: 8,
+//           color: 'rgba(14,165,233,0.3)',
+//           letterSpacing: 3, textTransform: 'uppercase',
+//           writingMode: 'vertical-rl',
+//           animation: 'blink-pulse 3s ease infinite',
+//         }}>
+//           Move cursor · headlights follow
+//         </div>
+
+//         <ScrollCue />
+//       </section>
+
+//       {/* ── SECTIONS 2–4: Scroll Story (Performance, Exploded, Speed) */}
+//       <Suspense fallback={<SectionSkeleton height="300vh" />}>
+//         <ScrollStory />
+//       </Suspense>
+
+//       {/* ── SECTION 5: Fleet Showcase ─────────────────────── */}
+//       <Suspense fallback={<SectionSkeleton height="80vh" />}>
+//         <FleetShowcase />
+//       </Suspense>
+
+//       {/* ── SECTION 6: Holographic Stats ──────────────────── */}
+//       <Suspense fallback={<SectionSkeleton height="60vh" />}>
+//         <HolographicStats />
+//       </Suspense>
+
+//       {/* ── SECTION 7: Booking Journey ────────────────────── */}
+//       <Suspense fallback={<SectionSkeleton height="100vh" />}>
+//         <BookingJourney />
+//       </Suspense>
+
+//       {/* ── SECTION 8: Final CTA + Footer ────────────────── */}
+//       <Suspense fallback={<SectionSkeleton height="100vh" />}>
+//         <FinalCTA user={user} />
+//       </Suspense>
+//     </div>
+//   );
+// }
+
+
 /**
  * DriveX — LandingPage.jsx  v2
  * Place at: src/pages/public/LandingPage.jsx
