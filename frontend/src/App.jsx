@@ -160,7 +160,7 @@ export default function App() {
           <AdminRoute><AdminUsers /></AdminRoute>
         } />
 
-        <Route path="/  " element={
+        <Route path="/admin/documents" element={
           <AdminRoute><AdminDocuments /></AdminRoute>
         } />
 

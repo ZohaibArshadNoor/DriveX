@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -36,3 +36,5 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    
+    admin_notes = Column(Text, nullable=True)   # <-- new

@@ -15,6 +15,19 @@ class UserRepository(BaseRepository[User]):
             .filter(User.email == email)
             .first()
         )
+        
+    def get_all(self, db: Session):
+        return db.query(User).order_by(User.created_at.desc()).all()
+
+    def get_by_id(self, db: Session, user_id: int):
+        return db.query(User).filter(User.id == user_id).first()
+
+    def update(self, db: Session, user: User, update_data: dict):
+        for key, value in update_data.items():
+            setattr(user, key, value)
+        db.commit()
+        db.refresh(user)
+        return user
 
 
 user_repository = UserRepository()

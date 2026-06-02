@@ -8,6 +8,7 @@ from app.api.v1.documents import router as documents_router
 from app.api.v1.payments import router as payment_router
 from app.api.v1.dashboard import router as dashboard_router
 from app.api.v1.reports import router as reports_router
+from app.api.v1 import users
 
 api_router = APIRouter()
 
@@ -19,3 +20,4 @@ api_router.include_router(documents_router)
 api_router.include_router(payment_router)
 api_router.include_router(dashboard_router)
 api_router.include_router(reports_router)
+api_router.include_router(users.router)
