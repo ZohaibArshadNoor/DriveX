@@ -20,6 +20,7 @@ import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { AuroraShader } from '../../shaders/AuroraShader';
+import { useAuthStore } from '../../store/authStore';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -254,7 +255,8 @@ function TrustBadge({ icon, label }) {
 }
 
 /* ── MAIN EXPORT ─────────────────────────────────────────── */
-export default function FinalCTA({ user }) {
+export default function FinalCTA() {
+  const { isAuthenticated } = useAuthStore();
   const navigate   = useNavigate();
   const sectionRef = useRef(null);
   const contentRef = useRef(null);
@@ -360,7 +362,7 @@ export default function FinalCTA({ user }) {
             display: 'flex', gap: 16, justifyContent: 'center',
             flexWrap: 'wrap', marginBottom: 48,
           }}>
-            {!user ? (
+            {!isAuthenticated ? (
               <>
                 <MagneticButton onClick={() => navigate('/register')} primary>
                   Start Your Journey →

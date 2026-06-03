@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.document import Document
 from app.repositories.base_repository import BaseRepository
@@ -31,6 +31,14 @@ class DocumentRepository(
             .filter(
                 Document.verification_status == "pending"
             )
+            .all()
+        )
+    
+    def get_all_with_users(self, db: Session):
+        return (
+            db.query(Document)
+            .options(joinedload(Document.user))
+            .order_by(Document.uploaded_at.desc())
             .all()
         )
 
