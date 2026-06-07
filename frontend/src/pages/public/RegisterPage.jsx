@@ -202,14 +202,14 @@ export default function RegisterPage() {
             </div>
 
             {/* Phone */}
-            <div data-field style={{ opacity: 0 }}>
+            {/* <div data-field style={{ opacity: 0 }}>
               <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.gray3, letterSpacing: 2, textTransform: "uppercase", marginBottom: 7 }}>
                 Phone <span style={{ color: T.gray5, fontWeight: 400 }}>(optional)</span>
               </label>
               <input type="tel" value={form.phone} onChange={set("phone")}
                 onFocus={() => setFocused("phone")} onBlur={() => setFocused("")}
                 placeholder="+92 300 0000000" style={inputStyle(focused === "phone")} />
-            </div>
+            </div> */}
 
             {/* Password */}
             <div data-field style={{ opacity: 0 }}>
